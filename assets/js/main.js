@@ -48,4 +48,4 @@ carregarResultados();
 
 setInterval(() => {
   if (!document.hidden) carregarResultados();
-}, 15 * 60 * 1000);
+}, 5 * 60 * 1000);

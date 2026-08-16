@@ -12,7 +12,7 @@
 │ Worker resultadosjb (cron)  │   */5 * * * *
 │                             │
 │  providers/                 │
-│  ├─ api-matrix  ──────────► resultadosjb-api (JSON, prefixos filtrados)
+│  ├─ api-matrix  ──────────► resultadosjb-api (Service Binding API_NOVA)
 │  ├─ lbr         ──────────► resultadofacil /df/de-hoje (scrape HTML)
 │  └─ federal     ──────────► Caixa API (JSON)
 │                             │

@@ -51,9 +51,6 @@ export function renderizarCards(lista, dataAtual, slugs) {
     animalImg.src = `/assets/img/animais-webp/${primeiro.grupo}.webp`;
     animalImg.alt = animal;
 
-    const caption = card.querySelector('.card-caption');
-    if (caption) caption.textContent = `Resultados completos de ${exibicao} em ${dataFormatada}`;
-
     const table = card.querySelector('.card-table');
     table.setAttribute('aria-label', `Resultados de ${exibicao}`);
 
