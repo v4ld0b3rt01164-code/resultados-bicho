@@ -67,21 +67,24 @@ powershell -File deploy.ps1
 
 > Não usar `npx wrangler deploy` se o token não tiver scope adequado — o deploy via REST é o padrão deste projeto.
 
-## 5. Deploy do front (Pages)
+## 5. Deploy do front (Pages — Git)
 
-**Via wrangler** (automatiza upload de assets + Functions):
+O projeto `resultadosbicho` é **integrado ao GitHub** (`v4ld0b3rt01164-code/resultados-bicho`, branch `master`). Cada `git push` dispara deploy automático.
+
+Criar o projeto Pages com integração Git:
 
 ```powershell
-$env:CLOUDFLARE_API_TOKEN = "<token>"
-$env:CLOUDFLARE_ACCOUNT_ID = "<account>"
-npx wrangler pages project create resultadosbicho
-npx wrangler pages deploy . --project-name=resultadosbicho --branch=main --commit-dirty=true
+# via API (exige GitHub já conectado à conta Cloudflare)
+$body = '{"name":"resultadosbicho","production_branch":"master","source":{"type":"github","config":{"owner":"v4ld0b3rt01164-code","repo_name":"resultados-bicho","production_branch":"master","deployments_enabled":true,"production_deployment_enabled":true,"preview_deployment_enabled":true}},"build_config":{"build_command":"","destination_dir":"/"}}'
+curl.exe -X POST "https://api.cloudflare.com/client/v4/accounts/{ACCOUNT}/pages/projects" -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" --data-binary "@arquivo.json"
 ```
 
 Notas:
 
-- O site é **Direct Upload** (sem Git). Páginas atualizam por re-deploy manual via wrangler.
-- O wrangler compila a Function `functions/api/contato.ts` automaticamente.
+- **Não** usar Direct Upload para o front — o deploy é via Git.
+- Build command vazio, output directory `/`. O Pages compila a Function `functions/api/contato.ts` automaticamente.
+- O nome do projeto **define o subdomínio** (`resultadosbicho` → `resultadosbicho.pages.dev`). Renomear depois **não** muda o subdomínio — se precisar de outro URL, recrie com outro nome e exclua o antigo.
+- Deploy manual de um commit específico (se o webhook não disparar): `POST .../pages/projects/resultadosbicho/deployments` com `{}`.
 - Pages redireciona `/look-go.html` → `/look-go` (308) e serve sem extensão. Links com `.html` funcionam (browser segue o redirect).
 - **Secret obrigatória**: `RESEND_API_KEY` no projeto Pages (não no worker):
   ```powershell

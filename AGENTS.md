@@ -4,6 +4,11 @@ Site estático **HTML5/CSS3/JS puro** (sem framework) no Cloudflare Pages + Work
 
 Projeto independente do `LoteriaBR` (que fica na pasta pai). Layout replicado do exemplo, mas com tema ouro/âmbar e dados via nova API.
 
+## Regras
+
+- **REGRAGORA**: toda alteração deve ser commitada e enviada ao GitHub (`git add -A && git commit && git push origin master`). Ao terminar qualquer tarefa, verificar `git status` e deixar o working tree **limpo**, com `HEAD == origin/master`. O Pages faz deploy automático a cada push — não há deploy manual de frontend.
+- `.env` (credenciais) **nunca** entra no repo (está no `.gitignore`).
+
 ## Comandos
 
 | Comando | Ação |
@@ -73,7 +78,7 @@ Sem test suite. Validação manual: `node --check dist/worker.js` e scripts em `
 - Metadata do worker: type do binding D1 é `d1` (não `d1_database`, erro 10021); incluir `workers_dev = $true` senão subdomain fica inativo.
 - Subdomain inativo (404 code 1042): ativar via `POST .../workers/scripts/{nome}/subdomain` com `{"enabled":true,"previews_enabled":true}`.
 - D1: `RESULTADOSJB` id `7d341bc7-6bf5-44c1-a08c-e086f7ae588e`. Schema em `worker/schema.sql`.
-- Pages: **Direct Upload via wrangler** (`npx wrangler pages deploy . --project-name=resultadosbicho --branch=main --commit-dirty=true`). O wrangler compila a Function `functions/api/contato.ts` automaticamente.
+- Pages: projeto `resultadosbicho` em `resultadosbicho.pages.dev`, **integrado ao GitHub** (`v4ld0b3rt01164-code/resultados-bicho`, branch `master`). Deploy automático a cada push — **não** usar Direct Upload/wrangler para o front.
 - Secret `RESEND_API_KEY` vai no **Pages** (`wrangler pages secret put`), não no worker.
 
 ## Frontend
