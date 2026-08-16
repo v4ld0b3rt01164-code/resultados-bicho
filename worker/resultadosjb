@@ -1,5 +1,6 @@
 import { capturarApiMatrix } from './src/providers/api-matrix.js';
 import { capturarLBR } from './src/providers/lbr.js';
+import { capturarSP } from './src/providers/sp.js';
 import { capturarFederal } from './src/providers/federal.js';
 import { LOTERIAS, SLUGS_ORDEM, API_BASE, USER_AGENT } from './src/constantes.js';
 
@@ -69,6 +70,9 @@ async function processarSlug(env, slug, data) {
     colecoes.push(map);
   } else if (slug === 'federal') {
     const map = await capturarFederal(env, data);
+    colecoes.push(map);
+  } else if (slug === 'saopaulo') {
+    const map = await capturarSP(env, data);
     colecoes.push(map);
   } else {
     const map = await capturarApiMatrix(env, data);
