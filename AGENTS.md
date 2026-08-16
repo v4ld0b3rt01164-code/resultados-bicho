@@ -65,7 +65,7 @@ Sem test suite. Validação manual: `node --check dist/worker.js` e scripts em `
 
 - `/api/resultados?data=YYYY-MM-DD` — endpoint público (GET, CORS aberto, cache 120s)
 - `/trigger/{SLUG}` — trigger manual
-- Cron `*/5 * * * *` — todas as 12 loterias em paralelo via `Promise.all`
+- Cron `3-58/5 * * * *` (minutos 3, 8, 13... — offset -3) — todas as 12 loterias em paralelo via `Promise.all`
 
 ## Wrangler
 

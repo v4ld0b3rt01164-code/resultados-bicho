@@ -23,7 +23,7 @@ $metadata = @{
   compatibility_flags = @("nodejs_compat")
   workers_dev = $true
   observability = @{ enabled = $true; head_sampling_rate = 1 }
-  triggers = @{ crons = @("*/5 * * * *") }
+  triggers = @{ crons = @("3-58/5 * * * *") }
   bindings = @(
     @{
       type = "d1"
@@ -89,7 +89,7 @@ try {
 
   if ($response.success) {
     Write-Host "`n`u{2705} Worker '$workerName' deployed successfully!" -ForegroundColor Green
-    Write-Host "   Cron: */5 * * * * (every 5 minutes)" -ForegroundColor Green
+    Write-Host "   Cron: 3-58/5 * * * * (every 5 min, offset -3)" -ForegroundColor Green
   } else {
     Write-Host "`n`u{274C} Deploy failed:" -ForegroundColor Red
     $response.errors | ConvertTo-Json

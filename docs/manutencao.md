@@ -2,7 +2,7 @@
 
 ## Rotinas
 
-- **Cron** `*/5 * * * *` captura as 12 loterias. Não requer intervenção.
+- **Cron** `3-58/5 * * * *` (minutos 3, 8, 13... — offset -3) captura as 12 loterias. Não requer intervenção.
 - **Trigger manual**: `GET /trigger/{slug}` para reprocessar uma loteria (útil após queda de fonte).
 - **Front**: estático. Alterações em `assets/*` ou páginas → redeploy automático do Pages no push.
 

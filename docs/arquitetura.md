@@ -9,7 +9,7 @@
                │ GET /api/resultados?data=YYYY-MM-DD
                ▼
 ┌─────────────────────────────┐
-│ Worker resultadosjb (cron)  │   */5 * * * *
+│ Worker resultadosjb (cron)  │   3-58/5 * * * *
 │                             │
 │  providers/                 │
 │  ├─ api-matrix  ──────────► resultadosjb-api (Service Binding API_NOVA)

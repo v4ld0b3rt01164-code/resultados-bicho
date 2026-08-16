@@ -13,7 +13,7 @@ binding = "API_NOVA"
 service = "resultadosjb-api"
 
 [triggers]
-crons = ["*/5 * * * *"]
+crons = ["3-58/5 * * * *"]
 
 [observability]
 enabled = true

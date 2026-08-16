@@ -60,7 +60,7 @@ powershell -File deploy.ps1
 
 - `main_module: worker.js`
 - `workers_dev: true`
-- cron `*/5 * * * *`
+- cron `3-58/5 * * * *` (minutos 3, 8, 13... — offset -3)
 - binding D1 `DB` (type `d1`, **não** `d1_database`)
 - binding service `API_NOVA` → `resultadosjb-api`
 - observability habilitado
