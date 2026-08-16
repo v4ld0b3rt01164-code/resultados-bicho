@@ -2,6 +2,10 @@ import { API_BASE, API_PREFIXES, EXCLUIR_CODIGOS, PREFIXOS_LONGOS, USER_AGENT } 
 
 const API_SERVICE = 'API_NOVA';
 
+const HORARIOS_PADRAO_MIN = 20;
+const HORARIOS_EXCECAO_MIN = { 19: 30 };
+const HORARIOS_PADRAO_SLUGS = new Set(['pt-rj', 'maluquinha-rj', 'look-go']);
+
 function prefixoDoCodigo(codigo) {
   if (!codigo) return null;
   for (const c of PREFIXOS_LONGOS) {
@@ -27,6 +31,14 @@ function horarioDoNome(nome) {
   return null;
 }
 
+function horarioPadrao(slug, horario) {
+  if (!HORARIOS_PADRAO_SLUGS.has(slug)) return horario;
+  const h = parseInt(horario.slice(0, 2), 10);
+  if (Number.isNaN(h)) return horario;
+  const min = HORARIOS_EXCECAO_MIN[h] ?? HORARIOS_PADRAO_MIN;
+  return `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}:00`;
+}
+
 export async function capturarApiMatrix(env, data) {
   const url = `${API_BASE}?data=${data}`;
   const res = env && env[API_SERVICE]
@@ -46,6 +58,8 @@ export async function capturarApiMatrix(env, data) {
     const horario = horarioDoNome(item.nome);
     if (!horario) continue;
 
+    const horarioFinal = horarioPadrao(slug, horario);
+
     const premios = (item.premios || []).map((p) => ({
       posicao: `${String(p.id).replace(/\.0$/, '')}º`,
       milhar: String(p.numero),
@@ -55,7 +69,7 @@ export async function capturarApiMatrix(env, data) {
     if (!porSlug[slug]) porSlug[slug] = [];
     porSlug[slug].push({
       data,
-      horario,
+      horario: horarioFinal,
       primeiro_premio: item.primeiro_premio ? String(item.primeiro_premio) : null,
       primeiro_grupo: item.primeiro_grupo ? parseInt(item.primeiro_grupo, 10) : null,
       premios,
