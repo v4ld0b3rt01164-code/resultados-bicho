@@ -1,0 +1,20 @@
+name = "resultadosjb"
+main = "resultadosjb"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "RESULTADOSJB"
+database_id = "7d341bc7-6bf5-44c1-a08c-e086f7ae588e"
+
+[[services]]
+binding = "API_NOVA"
+service = "resultadosjb-api"
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+[observability]
+enabled = true
+head_sampling_rate = 1

@@ -1,0 +1,14 @@
+{
+  "name": "resultadosbicho",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Site estático de resultados do Jogo do Bicho (Cloudflare Pages + Worker + D1)",
+  "scripts": {
+    "worker:build": "esbuild worker/resultadosjb --bundle --format=esm --outfile=dist/worker.js --target=es2022 --define:process.env.NODE_ENV='production'",
+    "worker:preview": "npx wrangler dev --config worker/wrangler.toml --local --port 8787"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  }
+}

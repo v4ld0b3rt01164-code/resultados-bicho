@@ -1,0 +1,214 @@
+import { capturarApiMatrix } from './src/providers/api-matrix.js';
+import { capturarLBR } from './src/providers/lbr.js';
+import { capturarFederal } from './src/providers/federal.js';
+import { LOTERIAS, SLUGS_ORDEM, API_BASE, USER_AGENT } from './src/constantes.js';
+
+const CRON_SLUGS = ['look-go', 'boa-sorte-go', 'pt-rj', 'maluquinha-rj', 'bahia', 'bahia-maluca', 'lbr', 'saopaulo', 'lotep', 'lotec', 'nacional', 'federal'];
+
+function dataBR() {
+  const now = new Date();
+  const formatter = new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+  });
+  const parts = formatter.formatToParts(now);
+  const get = (tipo) => (parts.find((p) => p.type === tipo) || {}).value || '';
+  return `${get('year')}-${get('month')}-${get('day')}`;
+}
+
+async function upsertResultado(env, slug, r) {
+  if (!r || !r.horario) return;
+  await env.DB.prepare(
+    `INSERT INTO resultados (loteria_id, data, horario, primeiro_premio, primeiro_grupo, fonte)
+     VALUES (?, ?, ?, ?, ?, ?)
+     ON CONFLICT (loteria_id, data, horario)
+     DO UPDATE SET primeiro_premio = excluded.primeiro_premio,
+                   primeiro_grupo = excluded.primeiro_grupo,
+                   fonte = excluded.fonte`
+  )
+    .bind(slug, r.data, r.horario, r.primeiro_premio || null, r.primeiro_grupo || null, r.fonte || 'api')
+    .run();
+
+  const row = await env.DB.prepare(
+    `SELECT id FROM resultados WHERE loteria_id = ? AND data = ? AND horario = ?`
+  )
+    .bind(slug, r.data, r.horario)
+    .first();
+  if (!row) return;
+
+  await env.DB.prepare(`DELETE FROM premios WHERE resultado_id = ?`).bind(row.id).run();
+
+  const premios = Array.isArray(r.premios) ? r.premios : [];
+  for (const p of premios) {
+    await env.DB.prepare(
+      `INSERT INTO premios (resultado_id, posicao, milhar, grupo)
+       VALUES (?, ?, ?, ?)`
+    )
+      .bind(row.id, p.posicao, p.milhar || '0000', p.grupo || null)
+      .run();
+  }
+}
+
+async function seedLoterias(env) {
+  let i = 0;
+  for (const slug of SLUGS_ORDEM) {
+    const info = LOTERIAS[slug];
+    await env.DB.prepare(
+      `INSERT OR IGNORE INTO loterias (slug, nome, grupo, ordem, ativa)
+       VALUES (?, ?, ?, ?, 1)`
+    )
+      .bind(slug, info.nome, info.grupo, i++)
+      .run();
+  }
+}
+
+async function processarSlug(env, slug, data) {
+  const colecoes = [];
+  if (slug === 'lbr') {
+    const map = await capturarLBR(env, data);
+    colecoes.push(map);
+  } else if (slug === 'federal') {
+    const map = await capturarFederal(env, data);
+    colecoes.push(map);
+  } else {
+    const map = await capturarApiMatrix(env, data);
+    if (map[slug]) colecoes.push({ [slug]: map[slug] });
+  }
+
+  let total = 0;
+  for (const colecao of colecoes) {
+    for (const [s, lista] of Object.entries(colecao)) {
+      for (const r of lista) {
+        await upsertResultado(env, slug, r);
+        total++;
+      }
+    }
+  }
+  console.log(`[${slug}] ${total} resultado(s) salvo(s) para ${data}`);
+}
+
+async function processarTodos(env, data) {
+  await seedLoterias(env);
+  await Promise.all(
+    CRON_SLUGS.map((slug) =>
+      processarSlug(env, slug, data).catch((e) => console.error(`[${slug}] ${e.message}`))
+    )
+  );
+}
+
+export default {
+  async scheduled(event, env, ctx) {
+    const data = dataBR();
+    console.log(`[CRON] Início ${data}`);
+    await processarTodos(env, data);
+  },
+
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    const path = url.pathname;
+
+    if (path.startsWith('/trigger/')) {
+      const slug = path.split('/').pop().toLowerCase();
+      if (!CRON_SLUGS.includes(slug)) {
+        return new Response(JSON.stringify({ erro: `Slug inválido: ${slug}` }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      const data = url.searchParams.get('data') || dataBR();
+      try {
+        await seedLoterias(env);
+        await processarSlug(env, slug, data);
+        return new Response(JSON.stringify({ ok: true, slug, data }), {
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        });
+      } catch (e) {
+        return new Response(JSON.stringify({ erro: true, message: e.message }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        });
+      }
+    }
+
+    if (path === '/api/resultados') {
+      return handleApiResultados(request, env);
+    }
+
+    return new Response(
+      JSON.stringify({ status: 'ok', worker: 'resultadosjb', rotas: ['/', '/api/resultados', '/trigger/{slug}'] }),
+      { headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+    );
+  },
+};
+
+async function handleApiResultados(request, env) {
+  const url = new URL(request.url);
+  const data = url.searchParams.get('data') || dataBR();
+  const slugFilter = url.searchParams.get('loteria');
+
+  const rows = await env.DB.prepare(
+    `SELECT r.loteria_id, r.data, r.horario, r.primeiro_premio, r.primeiro_grupo,
+            r.id AS resultado_id
+     FROM resultados r
+     WHERE r.data = ?
+     ORDER BY r.horario`
+  )
+    .bind(data)
+    .all();
+
+  const diasSemana = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+  const dateObj = new Date(data + 'T12:00:00');
+
+  const loterias = [];
+  for (const row of rows.results || []) {
+    if (slugFilter && row.loteria_id !== slugFilter) continue;
+    const premios = await env.DB.prepare(
+      `SELECT posicao, milhar, grupo FROM premios WHERE resultado_id = ? ORDER BY rowid`
+    )
+      .bind(row.resultado_id)
+      .all();
+
+    const nome = LOTERIAS[row.loteria_id] ? LOTERIAS[row.loteria_id].nome : row.loteria_id;
+    const horarioFormatado = row.horario ? row.horario.substring(0, 5) : '';
+    loterias.push({
+      slug: row.loteria_id,
+      nome_loteria: `${nome} - ${horarioFormatado}`,
+      horario: horarioFormatado,
+      primeiro_premio: row.primeiro_premio,
+      primeiro_grupo: row.primeiro_grupo,
+      resultados: (premios.results || []).map((p) => ({
+        posicao: p.posicao,
+        milhar: p.milhar,
+        grupo: p.grupo,
+      })),
+    });
+  }
+
+  loterias.sort((a, b) => {
+    const reg = /(\d{2}):(\d{2})/;
+    const mA = a.horario.match(reg);
+    const mB = b.horario.match(reg);
+    if (!mA || !mB) return 0;
+    return parseInt(mA[1], 10) * 60 + parseInt(mA[2], 10) - (parseInt(mB[1], 10) * 60 + parseInt(mB[2], 10));
+  });
+
+  return new Response(
+    JSON.stringify({
+      data: {
+        dia_semana: diasSemana[dateObj.getDay()],
+        data_formatada: dateObj.toLocaleDateString('pt-BR'),
+      },
+      loterias,
+    }),
+    {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Cache-Control': 'public, s-maxage=120',
+      },
+    }
+  );
+}

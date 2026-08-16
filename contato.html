@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Entre em contato com o ResultadosBicho. Dúvidas, sugestões ou feedback." />
+  <link rel="canonical" href="https://resultadosbicho.online/contato.html" />
+  <title>Contato - ResultadosBicho</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <link rel="icon" type="image/x-icon" href="/assets/img/favicon.ico" />
+  <meta name="theme-color" content="#0F0A05" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="Contato - ResultadosBicho" />
+  <meta property="og:description" content="Entre em contato com o ResultadosBicho." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="ResultadosBicho" />
+  <meta property="og:locale" content="pt_BR" />
+  <link rel="stylesheet" href="/assets/css/style.css" />
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Pular para o conteúdo</a>
+
+  <header class="header">
+    <div class="header-inner" style="justify-content:flex-start;">
+      <a href="/" class="logo-link" aria-label="ResultadosBicho - Início">
+        <img src="/assets/img/logo.webp" alt="ResultadosBicho" class="logo" style="height:65px;" />
+      </a>
+      <a href="/" class="btn-voltar">
+        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Voltar
+      </a>
+    </div>
+  </header>
+
+  <main id="main-content" class="flex-1">
+    <div class="pagina-estatica">
+      <h1>Fale Conosco</h1>
+      <p>Tem alguma dúvida, sugestão ou quer entrar em contato? Preencha o formulário abaixo.</p>
+
+      <form class="form-contato" id="formContato">
+        <div>
+          <label for="nome">Nome</label>
+          <input type="text" id="nome" name="nome" required placeholder="Seu nome" />
+        </div>
+        <div>
+          <label for="email">E-mail</label>
+          <input type="email" id="email" name="email" required placeholder="seu@email.com" />
+        </div>
+        <div>
+          <label for="mensagem">Mensagem</label>
+          <textarea id="mensagem" name="mensagem" required placeholder="Escreva sua mensagem..."></textarea>
+        </div>
+        <div id="formStatus" class="mensagem-form"></div>
+        <button type="submit">Enviar</button>
+      </form>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-content">
+        <nav class="footer-nav" aria-label="Rodapé">
+          <a href="/contato.html" aria-current="page">Contato</a>
+          <span class="sep" aria-hidden="true">|</span>
+          <a href="/politica-de-privacidade.html">Privacidade</a>
+          <span class="sep" aria-hidden="true">|</span>
+          <a href="/termos-de-uso.html">Termos</a>
+        </nav>
+        <p class="footer-copy">&copy; <span id="year"></span> ResultadosBicho</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = String(new Date().getFullYear());
+    document.getElementById('formContato').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const status = document.getElementById('formStatus');
+      const btn = form.querySelector('button');
+      btn.disabled = true;
+      btn.textContent = 'Enviando...';
+      status.className = 'mensagem-form';
+      status.textContent = '';
+
+      try {
+        const res = await fetch('/api/contato', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nome: document.getElementById('nome').value,
+            email: document.getElementById('email').value,
+            mensagem: document.getElementById('mensagem').value,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          status.className = 'mensagem-form sucesso';
+          status.textContent = data.message || 'Mensagem enviada com sucesso!';
+        } else {
+          const data = await res.json().catch(() => ({}));
+          status.className = 'mensagem-form erro';
+          status.textContent = data.erro || 'Erro ao enviar mensagem. Tente novamente.';
+        }
+      } catch {
+        status.className = 'mensagem-form erro';
+        status.textContent = 'Erro de conexão. Verifique sua internet e tente novamente.';
+      }
+      form.reset();
+      btn.disabled = false;
+      btn.textContent = 'Enviar';
+    });
+  </script>
+</body>
+</html>
