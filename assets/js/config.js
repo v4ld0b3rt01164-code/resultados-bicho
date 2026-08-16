@@ -23,6 +23,10 @@ export const LOTERIAS = {
   'federal': { label: 'FEDERAL', page: '/federal.html' },
 };
 
+export const CABECALHOS = {
+  'maluquinha-rj': 'MALUQUINHA',
+};
+
 export const FILTROS = {
   'index': Object.keys(LOTERIAS),
   'look-go': ['look-go'],

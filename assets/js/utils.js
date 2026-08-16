@@ -1,3 +1,5 @@
+import { CABECALHOS, LOTERIAS } from './config.js';
+
 export function getDataInteligente() {
   const agora = new Date();
   const formatter = new Intl.DateTimeFormat('pt-BR', {
@@ -36,8 +38,7 @@ export function formatarDataBR(dataISO) {
   return `${dia}/${mes}/${ano}`;
 }
 
-export function nomeExibicao(nomeLoteria, slug) {
-  const partes = nomeLoteria.split(' - ');
-  const horario = partes[1] || '';
-  return horario ? `${partes[0]} - ${horario}` : partes[0];
+export function nomeExibicao(slug, horario) {
+  const nome = CABECALHOS[slug] || LOTERIAS[slug]?.label || slug;
+  return horario ? `${nome} - ${horario}` : nome;
 }

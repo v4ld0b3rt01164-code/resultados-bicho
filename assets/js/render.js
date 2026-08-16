@@ -25,7 +25,7 @@ export function renderizarCards(lista, dataAtual, slugs) {
     const resultados = loteria.resultados;
     const primeiro = resultados[0] || { milhar: '----', grupo: 0 };
     const animal = ANIMAIS[primeiro.grupo] || 'Desconhecido';
-    const exibicao = nomeExibicao(loteria.nome_loteria);
+    const exibicao = nomeExibicao(loteria.slug, loteria.horario);
     const isPar = idx % 2 === 0;
 
     const clone = cardTemplate.content.cloneNode(true);
