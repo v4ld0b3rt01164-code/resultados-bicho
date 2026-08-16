@@ -39,7 +39,7 @@ Sem test suite. Validação manual: `node --check dist/worker.js` e scripts em `
 | BAHIA | `bahia` | API `resultadosjb-api` (prefixo `BA*`) |
 | BAHIA MALUCA | `bahia-maluca` | API `resultadosjb-api` (prefixo `BAM*`) |
 | LBR | `lbr` | **Scraping** resultadofacil `/df/de-hoje` |
-| SÃO PAULO (PT-SP/BAND) | `saopaulo` | API `resultadosjb-api` (prefixos `PTSP*`, `PTNSP*`, `BD*`) |
+| SÃO PAULO (PT-SP/BAND) | `saopaulo` | **Scraping** resultadofacil `/sp` (verticalização 6º-9º = colunas verticais, 10º = soma) |
 | LOTEP - PARAÍBA | `lotep` | API `resultadosjb-api` (prefixo `LTEP*`) |
 | LOTECE - CEARÁ | `lotec` | API `resultadosjb-api` (prefixo `LTCE*`) |
 | NACIONAL | `nacional` | API `resultadosjb-api` (prefixo `NAC*`) |
@@ -48,7 +48,7 @@ Sem test suite. Validação manual: `node --check dist/worker.js` e scripts em `
 - API principal: `https://resultadosjb-api.v4ld0b3rt01164.workers.dev/api/resultados?data=YYYY-MM-DD`
 - Formato (verificado): `{ data, total, source, resultados: [{ codigo, nome, tipo, data_loteria, primeiro_premio, primeiro_grupo, premios: [{id, numero, grupo, grupoe, grupom}] }] }`
 - **Filtrar fora**: `CP*` (Capital), `MG*` (Minas), `UR*` (Uruguai), `ST*` (Sorte), `LTTRIVO*`, `LOTO/QUIN/SEN` (Caixa), `MQF19` (Maluquinha Federal).
-- **Federal** vem da Caixa API (não da API nova). LBR vem de scraping. Demais vêm da API nova.
+- **Federal** vem da Caixa API (não da API nova). LBR vem de scraping (`/df/de-hoje`). SP vem de scraping (`/sp`, com verticalização). Demais vêm da API nova.
 
 ### Federal — detalhes
 - API retorna JSON com bilhetes de 6 dígitos → drop do 1º dígito (zero) → mantém últimos 5.
@@ -59,6 +59,7 @@ Sem test suite. Validação manual: `node --check dist/worker.js` e scripts em `
 - **BAHIA / BAHIA MALUCA / LOTEP / LOTECE**: 10 prêmios reais (API já retorna).
 - **Demais** (via API): 7 itens (5 reais + 6º/7º já computados soma/mult na API).
 - **LBR** (scraping): 5 reais + soma + mult (worker calcula 6º/7º/8º como no base).
+- **SP** (scraping): 5 reais + verticalização — 6º/7º/8º/9º = colunas verticais dos 4 primeiros, 10º = soma total (igual base).
 - **Federal**: 5 reais + worker calcula 6º/7º/8º.
 
 ## Rotas do Worker
