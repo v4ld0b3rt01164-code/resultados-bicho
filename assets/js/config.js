@@ -10,7 +10,7 @@ export const ANIMAIS = {
 
 export const LOTERIAS = {
   'look-go': { label: 'LOOK - GOIÁS', page: '/look-go.html' },
-  'boa-sorte-go': { label: 'BOA SORTE - GOIÁS', page: '/boa-sorte-go.html' },
+  'boa-sorte-go': { label: 'BOA SORTE - GO', page: '/boa-sorte-go.html' },
   'pt-rj': { label: 'PT - RIO DE JANEIRO', page: '/pt-rj.html' },
   'maluquinha-rj': { label: 'MALUQUINHA - RJ', page: '/maluquinha-rj.html' },
   'bahia': { label: 'BAHIA', page: '/bahia.html' },
