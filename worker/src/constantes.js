@@ -6,6 +6,8 @@ export const RESULTADOFACIL_LBR = 'https://www.resultadofacil.com.br/resultado-d
 
 export const RESULTADOFACIL_SP = 'https://www.resultadofacil.com.br/resultado-do-jogo-do-bicho/sp';
 
+export const RESULTADOFACIL_GO = 'https://www.resultadofacil.com.br/resultado-do-jogo-do-bicho/go';
+
 export const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
 
 export const ANIMAIS = [
@@ -47,4 +49,4 @@ export const API_PREFIXES = {
 
 export const PREFIXOS_LONGOS = ['PTSP', 'PTNSP', 'LTTRIVO', 'LTEP', 'LTCE', 'BAM', 'MQF', 'NAC'];
 
-export const EXCLUIR_CODIGOS = new Set(['MQF19']);
+export const EXCLUIR_CODIGOS = new Set(['MQF19', 'BA11', 'BAM11']);

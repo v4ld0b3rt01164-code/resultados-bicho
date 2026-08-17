@@ -32,8 +32,8 @@ Sem test suite. Validação manual: `node --check dist/worker.js` e scripts em `
 
 | Loteria | Slug | Fonte |
 |---------|------|-------|
-| LOOK - GOIÁS | `look-go` | API `resultadosjb-api` (prefixo `GO*`) |
-| Boa Sorte - GOIÁS | `boa-sorte-go` | API `resultadosjb-api` (prefixo `BS*`) |
+| LOOK - GOIÁS | `look-go` | **Scraping** resultadofacil `/go` (padrão `HH:20`, exceto 19→19:30) |
+| Boa Sorte - GOIÁS | `boa-sorte-go` | **Scraping** resultadofacil `/go` |
 | PT - RIO DE JANEIRO | `pt-rj` | API `resultadosjb-api` (prefixo `PT*`) |
 | Maluquinha - RIO | `maluquinha-rj` | API `resultadosjb-api` (prefixo `MQ*`, exceto `MQF19`) |
 | BAHIA | `bahia` | API `resultadosjb-api` (prefixo `BA*`) |
@@ -47,8 +47,8 @@ Sem test suite. Validação manual: `node --check dist/worker.js` e scripts em `
 
 - API principal: `https://resultadosjb-api.v4ld0b3rt01164.workers.dev/api/resultados?data=YYYY-MM-DD`
 - Formato (verificado): `{ data, total, source, resultados: [{ codigo, nome, tipo, data_loteria, primeiro_premio, primeiro_grupo, premios: [{id, numero, grupo, grupoe, grupom}] }] }`
-- **Filtrar fora**: `CP*` (Capital), `MG*` (Minas), `UR*` (Uruguai), `ST*` (Sorte), `LTTRIVO*`, `LOTO/QUIN/SEN` (Caixa), `MQF19` (Maluquinha Federal).
-- **Federal** vem da Caixa API (não da API nova). LBR vem de scraping (`/df/de-hoje`). SP vem de scraping (`/sp`, com verticalização). Demais vêm da API nova.
+- **Filtrar fora**: `CP*` (Capital), `MG*` (Minas), `UR*` (Uruguai), `ST*` (Sorte), `LTTRIVO*`, `LOTO/QUIN/SEN` (Caixa), `MQF19` (Maluquinha Federal), `BA11`/`BAM11` (BAHIA FEDERAL / BAHIA MALUCA FEDERAL — horário 11:00 não é o sorteio normal).
+- **Federal** vem da Caixa API (não da API nova). LBR vem de scraping (`/df/de-hoje`). SP vem de scraping (`/sp`, com verticalização). LOOK e BOA SORTE-GO vêm de scraping (`/go`). Demais vêm da API nova.
 
 ### Federal — detalhes
 - API retorna JSON com bilhetes de 6 dígitos → drop do 1º dígito (zero) → mantém últimos 5.
@@ -77,6 +77,7 @@ Sem test suite. Validação manual: `node --check dist/worker.js` e scripts em `
 - Worker via REST API (curl), `deploy.ps1` lê `.env` (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `D1_DATABASE_ID`). `.env` no `.gitignore`.
 - **Service Binding `API_NOVA` → `resultadosjb-api`** — o fetch worker→worker via `*.workers.dev` retorna 404/1042. Declarado em `wrangler.toml` e no metadata do `deploy-worker.ps1`. Provider `api-matrix.js` usa `env.API_NOVA.fetch()` (fallback `fetch()` no dev local).
 - Metadata do worker: type do binding D1 é `d1` (não `d1_database`, erro 10021); incluir `workers_dev = $true` senão subdomain fica inativo.
+- **CRON: registrar via endpoint `/schedules`** (`PUT .../workers/scripts/{nome}/schedules` com body `[{"cron":"3-58/5 * * * *"}]`). O campo `triggers.crons` no metadata do PUT **não** registra o cron (verificado: `GET /schedules` retornava `[]`). `deploy-worker.ps1` já faz o registro automático após cada deploy.
 - Subdomain inativo (404 code 1042): ativar via `POST .../workers/scripts/{nome}/subdomain` com `{"enabled":true,"previews_enabled":true}`.
 - D1: `RESULTADOSJB` id `7d341bc7-6bf5-44c1-a08c-e086f7ae588e`. Schema em `worker/schema.sql`.
 - Pages: projeto `resultadosbicho` em `resultadosbicho.pages.dev`, **integrado ao GitHub** (`v4ld0b3rt01164-code/resultados-bicho`, branch `master`). Deploy automático a cada push — **não** usar Direct Upload/wrangler para o front.

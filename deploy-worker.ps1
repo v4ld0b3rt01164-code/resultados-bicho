@@ -90,6 +90,19 @@ try {
   if ($response.success) {
     Write-Host "`n`u{2705} Worker '$workerName' deployed successfully!" -ForegroundColor Green
     Write-Host "   Cron: 3-58/5 * * * * (every 5 min, offset -3)" -ForegroundColor Green
+
+    $scheduleUrl = "https://api.cloudflare.com/client/v4/accounts/$AccountId/workers/scripts/$workerName/schedules"
+    $scheduleBody = '[{"cron":"3-58/5 * * * *"}]'
+    try {
+      $scheduleResponse = Invoke-RestMethod -Uri $scheduleUrl -Method Put -Headers @{ Authorization = "Bearer $ApiToken" } -ContentType "application/json" -Body $scheduleBody
+      if ($scheduleResponse.success) {
+        Write-Host "   Cron trigger registered via /schedules" -ForegroundColor Green
+      } else {
+        Write-Host "   `u{26A0} Falha ao registrar cron: $($scheduleResponse.errors | ConvertTo-Json -Compress)" -ForegroundColor Yellow
+      }
+    } catch {
+      Write-Host "   `u{26A0} Erro ao registrar cron: $_" -ForegroundColor Yellow
+    }
   } else {
     Write-Host "`n`u{274C} Deploy failed:" -ForegroundColor Red
     $response.errors | ConvertTo-Json
