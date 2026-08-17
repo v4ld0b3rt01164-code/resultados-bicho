@@ -73,7 +73,7 @@ export async function capturarLBR(env, data) {
 
   const lista = extrairResultadoFacilLBR(html);
   return {
-    [dataPagina]: lista.map((r) => ({
+    ['lbr']: lista.map((r) => ({
       data: dataPagina,
       horario: r.horario,
       primeiro_premio: r.primeiro_premio,

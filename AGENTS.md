@@ -62,6 +62,9 @@ Sem test suite. Validação manual: `node --check dist/worker.js` e scripts em `
 - **SP** (scraping): 5 reais + verticalização — 6º/7º/8º/9º = colunas verticais dos 4 primeiros, 10º = soma total (igual base).
 - **Federal**: 5 reais + worker calcula 6º/7º/8º.
 
+### Gotcha — providers retornam `{ slug: lista }`
+- `capturarLBR`/`capturarSP`/`capturarFederal` devem retornar `{ 'lbr'/'saopaulo'/'federal': lista }` (chave = **slug**). Antes retornavam `{ data: lista }`, e o loop do `resultadosjb` (que usa `s` como slug para suportar o GO) tentava inserir `loteria_id = data` → `FOREIGN KEY constraint failed` → o cron abortava LBR/SP/Federal silenciosamente (dados defasados). `capturarGO`/`capturarApiMatrix` já retornam por slug.
+
 ## Rotas do Worker
 
 - `/api/resultados?data=YYYY-MM-DD` — endpoint público (GET, CORS aberto, cache 120s)

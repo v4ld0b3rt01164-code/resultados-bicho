@@ -95,7 +95,7 @@ export async function capturarSP(env, data) {
 
   const lista = extrairResultadoFacilSP(html);
   return {
-    [dataPagina]: lista.map((r) => ({
+    ['saopaulo']: lista.map((r) => ({
       data: dataPagina,
       horario: r.horario,
       primeiro_premio: r.primeiro_premio,

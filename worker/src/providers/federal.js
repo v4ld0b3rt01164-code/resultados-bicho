@@ -59,6 +59,6 @@ export async function capturarFederal(env, data) {
   const dataISO = parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : data;
 
   return {
-    [dataISO]: [resultadoFederal(dataISO, premios)],
+    ['federal']: [resultadoFederal(dataISO, premios)],
   };
 }
